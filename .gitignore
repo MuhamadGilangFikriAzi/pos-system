@@ -1,0 +1,36 @@
+# OS
+Thumbs.db
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Docker
+.docker/
+
+# Laravel
+laravel/vendor/
+laravel/node_modules/
+laravel/.env
+laravel/storage/framework/cache/data/*
+laravel/storage/logs/*
+laravel/storage/debugbar/*
+laravel/bootstrap/cache/*
+!laravel/storage/framework/cache/data/.gitkeep
+!laravel/storage/logs/.gitkeep
+!laravel/storage/debugbar/.gitkeep
+!laravel/bootstrap/cache/.gitkeep
+
+# Temp files
+a.php
+cek_*.php
+check_*.php
+fix_*.php
+seed_*.php
+test_*.php
+create_*.php
+tmp_*.php
+tmp_*.blade.php
+tmp_*.sh
+*.bak
