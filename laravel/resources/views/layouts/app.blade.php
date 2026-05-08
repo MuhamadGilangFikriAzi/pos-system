@@ -24,15 +24,32 @@
                 <a href="{{ route("pos.index") }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition @if(request()->routeIs("pos.index")) bg-white/20 @endif">
                     <span>🧾</span> POS Kasir
                 </a>
+                <a href="{{ route("pos.shift.open") }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition @if(request()->routeIs("pos.shift.*")) bg-white/20 @endif">
+                    <span>🕐</span> Shift
+                </a>
+                <a href="{{ route("pos.kasir.dashboard") }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition @if(request()->routeIs("pos.kasir.*")) bg-white/20 @endif">
+                    <span>👤</span> Aktivitas
+                </a>
                 <a href="{{ route("products.index") }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition @if(request()->routeIs("products.*")) bg-white/20 @endif">
                     <span>📦</span> Produk
                 </a>
                 <a href="{{ route("categories.index") }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition @if(request()->routeIs("categories.*")) bg-white/20 @endif">
                     <span>📁</span> Kategori
                 </a>
+                <a href="{{ route("inventory.dashboard") }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition @if(request()->routeIs("inventory.*")) bg-white/20 @endif">
+                    <span>📦</span> Inventory
+                </a>
                 <a href="{{ route("reports.index") }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition @if(request()->routeIs("reports.index")) bg-white/20 @endif">
                     <span>📈</span> Laporan
                 </a>
+                @if(Auth::user()->canViewAllTransactions())
+                <a href="{{ route("admin.users.index") }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition @if(request()->routeIs("admin.users.*")) bg-white/20 @endif">
+                    <span>👥</span> User
+                </a>
+                <a href="{{ route("pos.kasir.stats") }}" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition @if(request()->routeIs("pos.kasir.stats")) bg-white/20 @endif">
+                    <span>📋</span> Monitor Kasir
+                </a>
+                @endif
                 <hr class="border-white/20 my-4">
                 <form method="POST" action="{{ route("logout") }}">
                     @csrf
@@ -52,6 +69,11 @@
                 </div>
                 <div class="flex items-center gap-3">
                     <span class="text-sm text-gray-500">{{ Auth::user()->name }}</span>
+                    @php
+                        $roleColors = ['admin'=>'purple','supervisor'=>'amber','kasir'=>'blue'];
+                        $c = $roleColors[Auth::user()->role] ?? 'gray';
+                    @endphp
+                    <span class="bg-{{$c}}-100 text-{{$c}}-700 px-2 py-0.5 rounded-full text-xs font-medium">{{ ucfirst(Auth::user()->role) }}</span>
                 </div>
             </header>
             <main class="flex-1 p-6">

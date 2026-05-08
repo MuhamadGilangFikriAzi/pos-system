@@ -7,7 +7,6 @@
     <title>Struk - {{ $transaction->invoice_number }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* ===== PRINT STYLES ===== */
         @media print {
             @page { margin: 0; size: 80mm auto; }
             body { background: white; margin: 0; padding: 0; width: 80mm; }
@@ -15,7 +14,6 @@
             #receipt-area { width: 80mm; margin: 0; padding: 4mm; border: none !important; box-shadow: none !important; }
         }
 
-        /* ===== ACTION BAR (tidak ke-print) ===== */
         .action-bar {
             background: #f8fafc; border-bottom: 1px solid #e2e8f0;
             padding: 12px 16px; display: flex; gap: 10px; align-items: center;
@@ -30,15 +28,12 @@
         .btn-back { background: #e2e8f0; color: #475569; }
         .btn-back:hover { background: #cbd5e1; }
 
-        /* ===== STRUK ===== */
         #receipt-area {
             font-family: 'Courier New', 'Consolas', monospace;
             width: 320px; margin: 20px auto; background: white;
             padding: 16px 20px; border: 1px solid #e2e8f0; border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
-
-        /* Kop */
         .r-head { text-align: center; margin-bottom: 6px; }
         .r-head .title { font-size: 18px; font-weight: bold; letter-spacing: 2px; }
         .r-head .sub { font-size: 9px; color: #888; letter-spacing: 3px; text-transform: uppercase; margin-top: 2px; }
@@ -47,7 +42,6 @@
         .r-hr { border: none; border-top: 1px solid #333; margin: 8px 0; }
         .r-hr-dash { border: none; border-top: 1px dashed #aaa; margin: 6px 0; }
 
-        /* Kolom barang */
         .r-col-hdr { display: flex; font-weight: bold; font-size: 10px; border-bottom: 1px dashed #aaa; padding-bottom: 4px; margin-bottom: 2px; }
         .r-col-hdr .cqty { width: 32px; text-align: center; }
         .r-col-hdr .cname { flex: 1; }
@@ -58,7 +52,7 @@
         .r-item .iname { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 2px; }
         .r-item .iprice { width: 90px; text-align: right; font-weight: bold; }
 
-        /* Total */
+        .r-item-disc { font-size: 9px; color: #dc2626; text-align: right; padding-right: 2px; margin-bottom: 2px; }
         .r-total-wrap { margin-top: 2px; }
         .r-total-row { display: flex; justify-content: flex-end; padding: 1px 0; font-size: 11px; }
         .r-total-row .rl { width: 80px; text-align: right; padding-right: 6px; }
@@ -67,7 +61,6 @@
         .r-grand .rl { width: 80px; text-align: right; padding-right: 6px; font-size: 12px; }
         .r-grand .rv { width: 100px; text-align: right; font-weight: bold; font-size: 18px; color: #2563eb; }
 
-        /* Footer */
         .r-footer { text-align: center; margin-top: 10px; }
         .r-footer .thanks { font-size: 13px; font-weight: bold; }
         .r-footer .info { font-size: 9px; color: #999; line-height: 1.6; margin-top: 4px; }
@@ -107,6 +100,10 @@
             <span>Kasir</span>
             <span>{{ $transaction->user->name ?? 'Admin' }}</span>
         </div>
+        <div class="r-line">
+            <span>Metode</span>
+            <span>{{ $transaction->payment_method ?? 'Tunai' }}</span>
+        </div>
 
         <hr class="r-hr-dash">
 
@@ -122,15 +119,56 @@
             <span class="iname">{{ $item->product->name ?? 'Produk' }}</span>
             <span class="iprice">Rp{{ number_format($item->subtotal, 0, ',', '.') }}</span>
         </div>
+        @if($item->discount_amount > 0)
+        <div class="r-item-disc">Diskon: -Rp{{ number_format($item->discount_amount, 0, ',', '.') }}</div>
+        @endif
         @endforeach
 
         <hr class="r-hr-dash">
 
         <div class="r-total-wrap">
+            <!-- Subtotal (setelah diskon item) -->
+            <div class="r-total-row">
+                <span class="rl">Subtotal</span>
+                <span class="rv">Rp{{ number_format($transaction->subtotal ?? $transaction->total, 0, ',', '.') }}</span>
+            </div>
+
+            <!-- Diskon Global -->
+            @if($transaction->discount_amount > 0)
+            <div class="r-total-row" style="color:#dc2626;">
+                <span class="rl">Diskon {{ $transaction->discount_percent > 0 ? '('.$transaction->discount_percent.'%)' : '' }}</span>
+                <span class="rv">-Rp{{ number_format($transaction->discount_amount, 0, ',', '.') }}</span>
+            </div>
+            @endif
+
+            <!-- Pajak -->
+            @if($transaction->tax_amount > 0)
+            <div class="r-total-row" style="color:#6366f1;">
+                <span class="rl">Pajak {{ $transaction->tax_percent > 0 ? '('.$transaction->tax_percent.'%)' : '' }}</span>
+                <span class="rv">+Rp{{ number_format($transaction->tax_amount, 0, ',', '.') }}</span>
+            </div>
+            @endif
+
+            <!-- Grand Total -->
+            @if($transaction->grand_total > 0)
+            <div class="r-grand">
+                <span class="rl">GRAND TOTAL</span>
+                <span class="rv">Rp{{ number_format($transaction->grand_total, 0, ',', '.') }}</span>
+            </div>
+            @else
             <div class="r-grand">
                 <span class="rl">TOTAL</span>
                 <span class="rv">Rp{{ number_format($transaction->total, 0, ',', '.') }}</span>
             </div>
+            @endif
+
+            @if($transaction->voucher_code)
+            <div class="r-total-row" style="color:#16a34a;">
+                <span class="rl">Voucher</span>
+                <span class="rv">{{ $transaction->voucher_code }}</span>
+            </div>
+            @endif
+
             <div class="r-total-row">
                 <span class="rl">Tunai</span>
                 <span class="rv">Rp{{ number_format($transaction->payment, 0, ',', '.') }}</span>
@@ -154,7 +192,6 @@
     </div>
 
     <script>
-    // Auto-print jika parameter ?auto=1 ada di URL
     if (window.location.search.includes('auto=1')) {
         window.onload = () => setTimeout(() => window.print(), 500);
     }
